@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lang Din</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --ink: #18372f;
+            --muted: #657b72;
+            --paper: #ffffff;
+            --canvas: #edf4ef;
+            --line: #d6e3da;
+            --green: #176b57;
+            --green-dark: #105242;
+            --coral: #d7654c;
+            --soft-green: #f4f9f5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            min-height: 100svh;
+            display: grid;
+            place-items: center;
+            padding: 36px 20px;
+            background-color: var(--canvas);
+            background-image:
+                linear-gradient(rgba(23, 107, 87, 0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(23, 107, 87, 0.035) 1px, transparent 1px);
+            background-size: 32px 32px;
+            color: var(--ink);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .card {
+            width: min(100%, 660px);
+            padding: clamp(26px, 5vw, 48px);
+            background: var(--paper);
+            border: 1px solid var(--line);
+            border-top: 4px solid var(--green);
+            border-radius: 8px;
+            box-shadow: 0 22px 60px rgba(28, 68, 53, 0.11);
+            animation: arrive 360ms ease-out both;
+        }
+
+        .card h1 {
+            color: var(--ink);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 36px;
+            font-weight: 500;
+            line-height: 1.1;
+        }
+
+        .card h1::before {
+            display: block;
+            margin-bottom: 12px;
+            color: var(--coral);
+            content: "WORD DESK  /  ENGLISH";
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            margin-top: 8px;
+            margin-bottom: 28px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-area {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .search-box input {
+            min-width: 0;
+            min-height: 50px;
+            flex: 1;
+            padding: 0 15px;
+            border: 1px solid #bdcec3;
+            border-radius: 6px;
+            outline: none;
+            background: #fbfdfb;
+            color: var(--ink);
+            font: inherit;
+            font-size: 15px;
+            transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+        }
+
+        .search-box input::placeholder {
+            color: #85958c;
+        }
+
+        .search-box input:focus {
+            border-color: var(--green);
+            background: var(--paper);
+            box-shadow: 0 0 0 3px rgba(23, 107, 87, 0.13);
+        }
+
+        .search-box button {
+            min-width: 104px;
+            min-height: 50px;
+            padding: 0 20px;
+            border: 0;
+            border-radius: 6px;
+            background: var(--green);
+            color: white;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 150ms ease, transform 150ms ease;
+        }
+
+        .search-box button:hover {
+            background: var(--green-dark);
+        }
+
+        .search-box button:active {
+            transform: translateY(1px);
+        }
+
+        .search-box button:focus-visible,
+        .suggestions button:focus-visible {
+            outline: 3px solid rgba(215, 101, 76, 0.42);
+            outline-offset: 2px;
+        }
+
+        .search-box button:disabled {
+            cursor: wait;
+            opacity: 0.7;
+        }
+
+        .suggestions {
+            position: absolute;
+            z-index: 2;
+            top: calc(100% + 7px);
+            right: 0;
+            left: 0;
+            max-height: 220px;
+            overflow-y: auto;
+            list-style: none;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: var(--paper);
+            box-shadow: 0 12px 28px rgba(28, 68, 53, 0.14);
+        }
+
+        .suggestions[hidden] {
+            display: none;
+        }
+
+        .suggestions li + li {
+            border-top: 1px solid #edf2ee;
+        }
+
+        .suggestions button {
+            width: 100%;
+            padding: 11px 14px;
+            border: 0;
+            background: transparent;
+            color: var(--ink);
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .suggestions button:hover,
+        .suggestions button:focus-visible {
+            background: var(--soft-green);
+        }
+
+        .result-container {
+            min-height: 160px;
+            padding: 24px;
+            border: 1px solid #dce9df;
+            border-left: 3px solid var(--coral);
+            border-radius: 6px;
+            background: var(--soft-green);
+        }
+
+        .result-container h2 {
+            margin-bottom: 5px;
+            color: var(--ink);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 29px;
+            font-weight: 500;
+            line-height: 1.2;
+            overflow-wrap: anywhere;
+            text-transform: capitalize;
+        }
+
+        .phonetic-text {
+            margin-bottom: 16px;
+            color: var(--green);
+            font-size: 13px;
+        }
+
+        #meaning {
+            color: #354d43;
+            font-size: 15px;
+            line-height: 1.75;
+            overflow-wrap: anywhere;
+        }
+
+        #meaning strong {
+            color: var(--ink);
+        }
+
+        #meaning span {
+            color: var(--muted);
+            font-family: Georgia, "Times New Roman", serif;
+            font-style: italic;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 20px;
+            margin-top: 16px;
+            color: var(--green);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status::before {
+            width: 7px;
+            height: 7px;
+            flex: 0 0 7px;
+            border-radius: 50%;
+            background: currentColor;
+            content: "";
+        }
+
+        .status.loading {
+            color: #a76720;
+        }
+
+        .status.error {
+            color: #bb4938;
+        }
+
+        @keyframes arrive {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 520px) {
+            body {
+                place-items: start center;
+                padding: 18px 12px;
+            }
+
+            .card {
+                padding: 26px 20px;
+            }
+
+            .card h1 {
+                font-size: 32px;
+            }
+
+            .search-box {
+                gap: 7px;
+            }
+
+            .search-box button {
+                min-width: 88px;
+                padding: 0 14px;
+            }
+
+            .result-container {
+                padding: 20px 18px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Lang Din</h1>
+        <p class="subtitle">Search any English word</p>
+
+        <div class="search-area">
+            <form class="search-box" id="searchForm">
+                <input type="search" id="wordInput" placeholder="Type a word (e.g. computer)" value="computer" required autocomplete="off" aria-autocomplete="list" aria-controls="searchSuggestions" aria-expanded="false">
+                <button id="searchBtn" type="submit">Search</button>
+            </form>
+            <ul id="searchSuggestions" class="suggestions" role="listbox" aria-label="Suggested words" hidden></ul>
+        </div>
+
+        <div class="result-container">
+            <h2 id="wordTitle">--</h2>
+            <p id="phonetic" class="phonetic-text">--</p>
+            <div id="definitionBox">
+                <p id="meaning">Meaning will appear here...</p>
+            </div>
+        </div>
+
+        <p id="statusText" class="status" aria-live="polite">Ready</p>
+    </div>
+
+    <script>
+        const wordInput = document.getElementById("wordInput");
+        const searchForm = document.getElementById("searchForm");
+        const searchBtn = document.getElementById("searchBtn");
+        const wordTitle = document.getElementById("wordTitle");
+        const phonetic = document.getElementById("phonetic");
+        const meaning = document.getElementById("meaning");
+        const statusText = document.getElementById("statusText");
+        const suggestionsBox = document.getElementById("searchSuggestions");
+        let activeRequest;
+        let suggestionController;
+        let suggestionTimer;
+
+        function setStatus(message, state) {
+            statusText.textContent = message;
+            statusText.className = `status ${state}`;
+        }
+
+        function hideSuggestions() {
+            suggestionsBox.hidden = true;
+            wordInput.setAttribute("aria-expanded", "false");
+        }
+
+        function showSuggestions(words) {
+            suggestionsBox.replaceChildren();
+            for (const word of words) {
+                const option = document.createElement("li");
+                option.setAttribute("role", "option");
+                const button = document.createElement("button");
+                button.type = "button";
+                button.textContent = word;
+                button.addEventListener("click", () => {
+                    wordInput.value = word;
+                    hideSuggestions();
+                    searchWord(word);
+                });
+                option.append(button);
+                suggestionsBox.append(option);
+            }
+            suggestionsBox.hidden = words.length === 0;
+            wordInput.setAttribute("aria-expanded", String(words.length > 0));
+        }
+
+        function loadSuggestions(value) {
+            clearTimeout(suggestionTimer);
+            suggestionController?.abort();
+            hideSuggestions();
+            const query = value.trim();
+            if (query.length < 2) {
+                hideSuggestions();
+                return;
+            }
+
+            suggestionTimer = setTimeout(async () => {
+                const controller = new AbortController();
+                suggestionController = controller;
+                try {
+                    const url = `https://api.datamuse.com/sug?s=${encodeURIComponent(query)}&max=6`;
+                    const response = await fetch(url, { signal: controller.signal });
+                    if (!response.ok) {
+                        hideSuggestions();
+                        return;
+                    }
+                    const matches = await response.json();
+                    if (wordInput.value.trim().toLowerCase() !== query.toLowerCase()) return;
+                    const words = matches
+                        .map(match => match.word)
+                        .filter(word => !/\s/.test(word) && word.toLowerCase() !== query.toLowerCase());
+                    showSuggestions(words);
+                } catch (error) {
+                    if (error.name !== "AbortError") hideSuggestions();
+                }
+            }, 200);
+        }
+
+        async function searchWord(word) {
+            const cleanWord = word.trim().toLowerCase();
+            if (!cleanWord) {
+                setStatus("Please enter a word to search.", "error");
+                wordInput.focus();
+                return;
+            }
+
+            activeRequest?.abort();
+            const request = new AbortController();
+            activeRequest = request;
+            let timedOut = false;
+            const timeoutId = setTimeout(() => {
+                timedOut = true;
+                request.abort();
+            }, 10000);
+            searchBtn.disabled = true;
+            setStatus("Searching definition...", "loading");
+
+            try {
+                let response;
+                const primaryController = new AbortController();
+                const abortPrimary = () => primaryController.abort();
+                request.signal.addEventListener("abort", abortPrimary, { once: true });
+                const primaryTimeoutId = setTimeout(abortPrimary, 2500);
+                try {
+                    response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(cleanWord)}`, { signal: primaryController.signal });
+                } catch (error) {
+                    if (request.signal.aborted) throw error;
+                } finally {
+                    clearTimeout(primaryTimeoutId);
+                    request.signal.removeEventListener("abort", abortPrimary);
+                }
+
+                if (response?.status === 404) {
+                    response = undefined;
+                }
+
+                let entry;
+                if (response?.ok) {
+                    try {
+                        entry = (await response.json())[0];
+                    } catch (error) {
+                        if (error.name === "AbortError") throw error;
+                    }
+                }
+
+                const firstMeaning = entry?.meanings?.[0];
+                const firstDefinition = firstMeaning?.definitions?.[0];
+                let wordValue = entry?.word || cleanWord;
+                let phoneticValue = entry?.phonetic || entry?.phonetics?.find(item => item.text)?.text || "";
+                let partOfSpeech = firstMeaning?.partOfSpeech || "";
+                let definitionText = firstDefinition?.definition;
+                let exampleText = firstDefinition?.example;
+
+                if (!definitionText) {
+                    const fallbackUrl = `https://api.datamuse.com/words?sp=${encodeURIComponent(cleanWord)}&md=d&max=1`;
+                    const fallbackResponse = await fetch(fallbackUrl, { signal: request.signal });
+                    if (!fallbackResponse.ok) {
+                        throw new Error(`Dictionary service error (HTTP ${fallbackResponse.status}). Please try again.`);
+                    }
+
+                    const fallbackEntries = await fallbackResponse.json();
+                    const fallbackEntry = fallbackEntries.find(item => item.defs?.length);
+                    if (!fallbackEntry) {
+                        throw new Error("Word not found. Check the spelling and try again.");
+                    }
+
+                    const definitionParts = fallbackEntry.defs[0].split("\t");
+                    wordValue = fallbackEntry.word;
+                    partOfSpeech = definitionParts.length > 1 ? definitionParts.shift() : "";
+                    definitionText = definitionParts.join("\t");
+                    phoneticValue = "";
+                    exampleText = "";
+                }
+
+                wordTitle.textContent = wordValue;
+                phonetic.textContent = phoneticValue ? `${phoneticValue} • (${partOfSpeech})` : partOfSpeech ? `(${partOfSpeech})` : "";
+
+                meaning.replaceChildren();
+                const label = document.createElement("strong");
+                label.textContent = "Definition: ";
+                meaning.append(label, document.createTextNode(definitionText));
+                if (exampleText) {
+                    const example = document.createElement("span");
+                    example.textContent = `Example: “${exampleText}”`;
+                    meaning.append(document.createElement("br"), document.createElement("br"), example);
+                }
+
+                setStatus("Definition found successfully!", "success");
+            } catch (error) {
+                if (error.name === "AbortError" && activeRequest !== request) return;
+                if (error.name === "AbortError" && timedOut) {
+                    error = new Error("The dictionary service took too long to respond. Please try again.");
+                }
+                console.error("Error:", error);
+                wordTitle.textContent = cleanWord;
+                phonetic.textContent = "";
+                meaning.textContent = error instanceof TypeError
+                    ? "Could not connect to the dictionary service. Check your internet connection and try again."
+                    : error.message;
+                setStatus("Search failed.", "error");
+            } finally {
+                clearTimeout(timeoutId);
+                if (activeRequest === request) {
+                    activeRequest = undefined;
+                    searchBtn.disabled = false;
+                }
+            }
+        }
+
+        searchForm.addEventListener("submit", event => {
+            event.preventDefault();
+            clearTimeout(suggestionTimer);
+            suggestionController?.abort();
+            hideSuggestions();
+            searchWord(wordInput.value);
+        });
+
+        wordInput.addEventListener("input", () => loadSuggestions(wordInput.value));
+        wordInput.addEventListener("focus", () => loadSuggestions(wordInput.value));
+        document.addEventListener("click", event => {
+            if (!event.target.closest(".search-area")) hideSuggestions();
+        });
+
+        searchWord(wordInput.value);
+    </script>
+</body>
+</html>
